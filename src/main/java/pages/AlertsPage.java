@@ -15,7 +15,7 @@ public class AlertsPage {
         {
             driver.switchTo().alert();
             return true;
-        }   // try
+        }
         catch (NoAlertPresentException Ex)
         {
             return false;

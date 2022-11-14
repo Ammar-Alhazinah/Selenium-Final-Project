@@ -57,6 +57,11 @@ public class HomePage {
         return new ShoppingCartPage(driver);
     }
 
+    public AccountPage clickOnAccount(){
+        driver.findElement(userAccount).click();
+        return new AccountPage(driver);
+    }
+
     public void clearSearch() {
         driver.findElement(searchField).clear();
     }

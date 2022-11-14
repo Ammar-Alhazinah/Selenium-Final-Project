@@ -46,6 +46,11 @@
             <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
+        <!--<dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-devtools-v86</artifactId>
+        <version>RELEASE</version>
+    </dependency>-->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
@@ -54,7 +59,7 @@
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-testng</artifactId>
-            <version>2.19.0</version>
+            <version>RELEASE</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

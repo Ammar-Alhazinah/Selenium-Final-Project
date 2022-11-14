@@ -7,18 +7,18 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestResult;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.*;
 import pages.AlertsPage;
 import pages.HomePage;
 import pages.LoginPage;
 import utils.WindowManager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.AbstractList;
+import java.util.Properties;
 
 public class BaseTests {
 
@@ -28,7 +28,10 @@ public class BaseTests {
     protected WindowManager windowManager;
 
     @BeforeClass
-    public void setUp() throws InterruptedException {
+    public void setUp() throws InterruptedException, IOException{
+        FileReader fileReader = new FileReader("resources/Files/properties");
+        Properties properties = new Properties();
+        properties.load(fileReader);
         System.setProperty("webdriver.chrome.driver", "resources/chromedriver.exe");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--incognito");
@@ -40,35 +43,20 @@ public class BaseTests {
         driver.get("https://www.aliexpress.com/all-wholesale-products.html");
         driver.manage().timeouts().getPageLoadTimeout();
         homePage = new HomePage(driver);
-//        Thread.sleep(2000);
         LoginPage loginPage = homePage.hoverElement();
-//        Thread.sleep(5000);
-        loginPage.enterEmail("acount.test.01.01@gmail.com");
-        loginPage.enterPassword("trewqst@123");
+        loginPage.enterEmail(properties.getProperty("email"));
+        loginPage.enterPassword(properties.getProperty("password"));
         Thread.sleep(3000);
         loginPage.singIn();
 
         Thread.sleep(5000);
     }
 
-  /*  public void goHome() {
-        driver.get("https://www.aliexpress.com/all-wholesale-products.html");
-
-        homePage = new HomePage(driver);
-        alertPage = new AlertsPage(driver);
-
-    }*/
 
     @BeforeMethod
     public void clearSearch() {
         homePage.clearSearch();
     }
-
-    /*@AfterMethod
-    public void closeTab() {
-        driver.close();
-        driver.getWindowHandles().forEach(tab -> driver.switchTo().window(tab));
-    }*/
 
 
     @AfterMethod
@@ -84,4 +72,8 @@ public class BaseTests {
         }
     }
 
+    @AfterTest
+    public void tearDown() {
+        driver.quit();
+    }
 }
