@@ -1,21 +1,57 @@
 package pages;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.io.IOException;
+import java.time.Duration;
 
 public class AddCartResult {
     WebDriver driver;
-    private By addCartResultTxt = By.className("addcart-result-title");
-    private By viewShoppingCartBtn = By.xpath("//div[@class='addcart-result-action']/a/button");
-    private By continueShoppingBtn = By.xpath("//div[@class='addcart-result-action']//button");
-    private By closeDialogBtn = By.className("next-dialog-close");
+    private Logger logger = LogManager.getLogger(AddCartResult.class);
+    private final By dialogDiv = By.xpath("//div[@role='dialog']");
+    private final By viewShoppingCartBtn = By.xpath("//button[contains(@class,'view-shopcart')]");
+    private final By continueShoppingBtn = By.xpath("//button[contains(@class,'continue-shop')]");
+    WebElement dialog;
 
-    public AddCartResult(WebDriver driver) {
+    public AddCartResult(WebDriver driver) throws IOException {
+        SimpleLayout layout = new SimpleLayout();
+        FileAppender appender = new FileAppender(layout, "SeleniumLog.log", true);
+        logger.addAppender(appender);
         this.driver = driver;
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        dialog = wait.until(ExpectedConditions.presenceOfElementLocated(dialogDiv));
     }
 
-    public void continueShoppingBtnClick(){
+    public void clickContinueShopping() {
+        try {
 
+            WebElement continueShoppingButton = dialog.findElement(continueShoppingBtn);
+            continueShoppingButton.click();
+            logger.info("clickContinueShopping - Passed");
+        } catch (Exception e) {
+            logger.error("clickContinueShopping - Failed", e);
+        }
+    }
+
+    public ShoppingCartPage clickViewShoppingCart() throws IOException {
+        try {
+
+            WebElement viewShoppingCartButton = dialog.findElement(viewShoppingCartBtn);
+            viewShoppingCartButton.click();
+            logger.info("clickViewShoppingCart - Passed");
+        } catch (Exception e) {
+
+            logger.error("clickViewShoppingCart - Failed", e);
+        }
+        return new ShoppingCartPage(driver);
     }
 }
 

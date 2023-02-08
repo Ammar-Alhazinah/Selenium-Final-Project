@@ -2,9 +2,6 @@ package utils;
 
 import org.openqa.selenium.WebDriver;
 
-import java.util.Iterator;
-import java.util.Set;
-
 public class WindowManager {
 
     private WebDriver driver;

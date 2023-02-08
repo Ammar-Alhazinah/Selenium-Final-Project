@@ -1,6 +1,8 @@
 package base;
 
 import com.google.common.io.Files;
+import io.qameta.allure.Allure;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -8,54 +10,63 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
-import pages.AlertsPage;
 import pages.HomePage;
 import pages.LoginPage;
 import utils.WindowManager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.AbstractList;
 import java.util.Properties;
+
+import HelperClasses.Constants;
 
 public class BaseTests {
 
+    public WebDriver getDriver() {
+        return driver;
+    }
+
     private WebDriver driver;
     protected HomePage homePage;
-    protected AlertsPage alertPage;
     protected WindowManager windowManager;
 
     @BeforeClass
-    public void setUp() throws InterruptedException, IOException{
-        FileReader fileReader = new FileReader("resources/Files/properties");
+    public void setUp() throws IOException {
+        FileReader fileReader = new FileReader(Constants.PROPERTIES_FILE);
         Properties properties = new Properties();
+
         properties.load(fileReader);
-        System.setProperty("webdriver.chrome.driver", "resources/chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", Constants.CHROME_DRIVER_EXE);
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--incognito");
-//        options.addArguments("--block-new-web-contents");
         driver = new ChromeDriver(options);
 
         windowManager = new WindowManager(driver);
         windowManager.maximize();
-        driver.get("https://www.aliexpress.com/all-wholesale-products.html");
+        driver.get(Constants.ALIEXPRESS_URL);
+
         driver.manage().timeouts().getPageLoadTimeout();
         homePage = new HomePage(driver);
-        LoginPage loginPage = homePage.hoverElement();
-        loginPage.enterEmail(properties.getProperty("email"));
-        loginPage.enterPassword(properties.getProperty("password"));
-        Thread.sleep(3000);
-        loginPage.singIn();
+            LoginPage loginPage = homePage.hoverElement();
+            String email = properties.getProperty("email");
+            String password = properties.getProperty("password");
+            loginPage.singIn(email, password);
 
-        Thread.sleep(5000);
+            driver.get(Constants.ALIEXPRESS_URL);
+
     }
 
 
     @BeforeMethod
     public void clearSearch() {
-        homePage.clearSearch();
+        try {
+            driver.manage().timeouts().getPageLoadTimeout();
+            homePage.clearSearch();
+        } catch (Exception e) {
+            driver.get(Constants.ALIEXPRESS_URL);
+        }
+
     }
 
 
@@ -65,15 +76,21 @@ public class BaseTests {
             var camera = (TakesScreenshot) driver;
             File screenshot = camera.getScreenshotAs(OutputType.FILE);
             try {
-                Files.move(screenshot, new File("resources/screenshots/" + result.getName() + ".png"));
+                File screenshotFile = new File(Constants.SCREENSHOTS_FOLDER + result.getName() + ".png");
+
+                Files.move(screenshot, screenshotFile);
+
+                Allure.addAttachment(result.getName() + ".png", FileUtils.openInputStream(screenshotFile));
+
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    @AfterTest
-    public void tearDown() {
-        driver.quit();
-    }
+//    @AfterTest
+//    public void tearDown() {
+//        driver.quit();
+//    }
 }

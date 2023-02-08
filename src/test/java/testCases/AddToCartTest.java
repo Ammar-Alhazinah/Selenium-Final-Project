@@ -1,52 +1,78 @@
 package testCases;
 
 import DataProvider.DataProviderClass;
-import HelpClasses.WriteCsvFile;
+import HelperClasses.Constants;
+import HelperClasses.WriteCsvFile;
 import base.BaseTests;
+import io.qameta.allure.Allure;
+import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import pages.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
+
 import java.util.List;
+
+import static HelperClasses.ReadCsvFile.getNumberOfItems;
 
 
 public class AddToCartTest extends BaseTests {
     static List<String[]> csvLines = new ArrayList<String[]>();
 
-    @Test(priority = 1, dataProviderClass = DataProviderClass.class, dataProvider = "Data")
-    public void addToCartTest(String itemName) throws InterruptedException {
-
-        Thread.sleep(2000);
+    @Test(dataProviderClass = DataProviderClass.class, dataProvider = "Data")
+    public void addToCartTest(ITestContext context, String itemName) throws IOException {
         homePage.enterText(itemName);
 
         ResultPage resultPage = homePage.hitSearch();
-        Thread.sleep(7000);
 
         ItemDetailsPage itemDetailsPage = resultPage.clickItemLink(1);
-        Thread.sleep(10000);
-
-        itemDetailsPage.addToCart();
-        Thread.sleep(3000);
-
         String[] lineDetails = {itemName, itemDetailsPage.getItemTitle(), itemDetailsPage.getItemLink()};
         csvLines.add(lineDetails);
 
-        homePage.closeTab();
+        int index = context.getAllTestMethods().length - 1;
+        String methodName = context.getAllTestMethods()[index].getMethodName();
 
+        getDriver().manage().timeouts().getPageLoadTimeout();
+
+        if (methodName.equals("addToCartTest")) {
+            AddCartResult addCartResult = itemDetailsPage.addToCart();
+            ShoppingCartPage shoppingCartPage = addCartResult.clickViewShoppingCart();
+
+            Assert.assertEquals(shoppingCartPage.numberOfItems(), getNumberOfItems() - 1, "Number of items in cart is not as expected");
+
+        } else {
+            AddCartResult addCartResult = itemDetailsPage.addToCart();
+
+            addCartResult.clickContinueShopping();
+        }
+
+        homePage.closeTab();
     }
 
-    @Test(priority = 2)
-    public void CheckItemsTest() {
+    @Test
+    public void checkNumberOfCartItemsTest() throws IOException {
         ShoppingCartPage shoppingCartPage = homePage.clickOnShopCart();
-        homePage.takeScreenShot();
-        Assert.assertEquals(shoppingCartPage.numberOfItems(), 3);
+
+        Assert.assertEquals(shoppingCartPage.numberOfItems(), getNumberOfItems() - 1, "Number of items in cart is not as expected");
+
     }
 
     @AfterClass
     public static void afterClass() {
         String[] headers = {"Item Name", "Item Title", "Item Link"};
-        WriteCsvFile.writeDataLineByLine("resources/Files/output.csv", csvLines, headers);
+        WriteCsvFile.writeDataLineByLine(Constants.OUTPUT_FILE, csvLines, headers);
+        try {
+            File outputFile = new File(Constants.OUTPUT_FILE);
+            Allure.addAttachment("output.csv", FileUtils.openInputStream(outputFile));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

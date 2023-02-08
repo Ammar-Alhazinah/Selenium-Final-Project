@@ -3,10 +3,12 @@ package pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import java.io.IOException;
+
 public class SettingPage extends AccountPage{
     private WebDriver driver;
 
-    public SettingPage(WebDriver driver) {
+    public SettingPage(WebDriver driver) throws IOException {
         super(driver);
         this.driver = driver;
     }

@@ -6,10 +6,12 @@ import org.testng.annotations.Test;
 import pages.AccountPage;
 import pages.OrdersPage;
 
+import java.io.IOException;
+
 public class OrdersPageTest extends BaseTests {
 
     @Test
-    public void ordersTest() throws InterruptedException {
+    public void ordersTest() throws InterruptedException, IOException {
         AccountPage accountPage = homePage.clickOnAccount();
         OrdersPage orderPage = accountPage.clickOrders();
 
